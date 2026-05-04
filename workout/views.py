@@ -170,38 +170,100 @@ def summary(request):
 
     if not logs.exists():
         return render(request, "summary.html", {
-            "chart_minutes": [],
-            "chart_counts": [],
-            "labels": []
+            "chart_minutes": [], "chart_counts": [], "labels": [],
+            "avg_2025_counts": 0, "avg_2025_minutes": 0,
+            "weekly_2026_counts": [], "weekly_2026_minutes": [], "labels_2026": [],
+            "completion_pct": 0, "completed_planned": 0, "total_planned": 0,
         })
 
-    import pandas as pd
-
-    # Convert queryset to DataFrame
     df = pd.DataFrame(list(logs.values("date_completed", "duration")))
-
-    # Convert to datetime
     df["date_completed"] = pd.to_datetime(df["date_completed"])
-
-    # ✅ Normalize duration:
-    # If duration is > 180 → assume it's seconds and convert
-    df["duration_minutes"] = df["duration"].apply(
-        lambda d: d / 60 if d > 180 else d
-    )
-
-    # Add a "week" column (year-week)
+    df["duration_minutes"] = df["duration"].apply(lambda d: d / 60 if d > 180 else d)
     df["week"] = df["date_completed"].dt.strftime("%G-%V")
+    df["year"] = df["date_completed"].dt.year
 
-    # Group by week
+    # ── All-time weekly (existing charts) ────────────────────────────────────
     weekly_minutes = df.groupby("week")["duration_minutes"].sum()
-    weekly_counts = df.groupby("week")["date_completed"].count()
+    weekly_counts  = df.groupby("week")["date_completed"].count()
+    labels         = weekly_minutes.index.tolist()
 
-    labels = weekly_minutes.index.tolist()
-    chart_minutes = weekly_minutes.tolist()
-    chart_counts = weekly_counts.tolist()
+    # ── 2025 averages ─────────────────────────────────────────────────────────
+    df25 = df[df["year"] == 2025]
+    if not df25.empty:
+        avg_2025_counts  = round(df25.groupby("week")["date_completed"].count().mean(), 1)
+        avg_2025_minutes = round(df25.groupby("week")["duration_minutes"].sum().mean(), 1)
+    else:
+        avg_2025_counts  = 0
+        avg_2025_minutes = 0
+
+    # ── 2026 per-week ─────────────────────────────────────────────────────────
+    df26 = df[df["year"] == 2026]
+    if not df26.empty:
+        w26_counts  = df26.groupby("week")["date_completed"].count()
+        w26_minutes = df26.groupby("week")["duration_minutes"].sum()
+        labels_2026         = w26_counts.index.tolist()
+        weekly_2026_counts  = w26_counts.tolist()
+        weekly_2026_minutes = [round(v, 1) for v in w26_minutes.reindex(labels_2026, fill_value=0).tolist()]
+    else:
+        labels_2026         = []
+        weekly_2026_counts  = []
+        weekly_2026_minutes = []
+
+    # ── Completion tracker ────────────────────────────────────────────────────
+    # Program started week 1 of current year; count planned sessions (6/week)
+    # from program start up to today, compare with actual logged sessions.
+    import datetime, json as _json
+    program_path = os.path.join(settings.BASE_DIR, 'data', 'program.json')
+    with open(program_path, encoding='utf-8') as f:
+        program = _json.load(f)
+
+    today = datetime.date.today()
+    # Program "start date": first Monday of 2026 (or whichever year is current)
+    program_year = 2026
+    jan1 = datetime.date(program_year, 1, 1)
+    # Monday of week 1 in program_year
+    program_start = jan1 - datetime.timedelta(days=jan1.weekday())
+
+    days_elapsed = (today - program_start).days + 1  # inclusive
+    if days_elapsed < 0:
+        days_elapsed = 0
+
+    # Count planned non-rest days up to today (cycling 12 weeks × 7 days)
+    total_planned = 0
+    completed_planned = 0
+    for day_offset in range(days_elapsed):
+        d = program_start + datetime.timedelta(days=day_offset)
+        # Which program week (0-indexed cycling)
+        week_idx = (day_offset // 7) % 12
+        dow = d.isoweekday()  # 1=Mon…7=Sun
+        week_data = program["weeks"][week_idx]
+        day_data = next((x for x in week_data["days"] if x["day"] == dow), None)
+        if day_data and day_data["workout"] is not None:
+            total_planned += 1
+            # Check if a workout was logged on this date
+            logged = logs.filter(
+                date_completed__date=d,
+                type__in=["Calisthenics", "Full Body", "Core", "Butt", "Arms, core",
+                           "Chest, back", "Core, back", "Butt, legs"]
+            ).exists()
+            if not logged:
+                # Also accept any workout logged that day (type may be stored as focus)
+                logged = logs.filter(date_completed__date=d).exists()
+            if logged:
+                completed_planned += 1
+
+    completion_pct = round(100 * completed_planned / total_planned, 1) if total_planned else 0
 
     return render(request, "summary.html", {
-        "labels": labels,
-        "chart_minutes": chart_minutes,
-        "chart_counts": chart_counts,
+        "labels":        labels,
+        "chart_minutes": [round(v, 1) for v in weekly_minutes.tolist()],
+        "chart_counts":  weekly_counts.tolist(),
+        "avg_2025_counts":       avg_2025_counts,
+        "avg_2025_minutes":      avg_2025_minutes,
+        "labels_2026":           labels_2026,
+        "weekly_2026_counts":    weekly_2026_counts,
+        "weekly_2026_minutes":   weekly_2026_minutes,
+        "completion_pct":        completion_pct,
+        "completed_planned":     completed_planned,
+        "total_planned":         total_planned,
     })
