@@ -4,12 +4,108 @@
     <title>Workout Timer</title>
     
     <style>
-
-        
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            padding-top: 50px;
+            padding-top: 30px;
+        }
+
+        /* ── Training program ───────────────────────── */
+        .program-section {
+            width: 88%;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            text-align: left;
+        }
+        .program-section h2 {
+            text-align: center;
+            margin-bottom: 4px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .program-meta {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #777;
+            margin-bottom: 12px;
+        }
+        .today-box {
+            background: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+        }
+        .today-box .today-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .today-box .today-workout {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1b5e20;
+            margin: 4px 0 2px;
+        }
+        .today-box .today-focus {
+            font-size: 0.85rem;
+            color: #555;
+        }
+        .today-box a.load-btn {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 14px;
+            background: #4caf50;
+            color: #fff;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+        .today-box a.load-btn:hover { background: #388e3c; }
+        .week-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .week-table th {
+            background: #f0f4f0;
+            padding: 6px 8px;
+            border-bottom: 2px solid #ccc;
+            text-align: left;
+        }
+        .week-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .week-table tr.today-row td {
+            background: #f1fff1;
+            font-weight: bold;
+        }
+        .week-table tr.rest-row td {
+            color: #aaa;
+            font-style: italic;
+        }
+        .focus-badge {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            background: #e0e0e0;
+            color: #444;
+        }
+        .focus-badge.butt    { background: #fce4ec; color: #880e4f; }
+        .focus-badge.core    { background: #e3f2fd; color: #0d47a1; }
+        .focus-badge.full    { background: #e8f5e9; color: #1b5e20; }
+        .focus-badge.chest   { background: #fff3e0; color: #e65100; }
+        .focus-badge.arms    { background: #ede7f6; color: #4a148c; }
+        .focus-badge.legs    { background: #fbe9e7; color: #bf360c; }
+        .phase-label {
+            text-align: center;
+            font-size: 0.78rem;
+            color: #888;
+            margin-bottom: 6px;
         }
         #progress {
             width: 80%;
@@ -63,6 +159,71 @@
 </head>
 <body>
     <h1>Workout Timer</h1>
+
+    <!-- ══ TRAINING PROGRAM ══════════════════════════════════════════════ -->
+    {% if week_data %}
+    <div class="program-section">
+        <h2>12-ukers kalistenikk-program</h2>
+        <p class="program-meta">
+            Uke {{ program_week_num }} av 12
+            &nbsp;·&nbsp;
+            Fase {{ week_data.phase }}
+            &nbsp;·&nbsp;
+            {% for ph in program.phases %}{% if ph.phase == week_data.phase %}{{ ph.duration_range }}{% endif %}{% endfor %}
+        </p>
+
+        {% if today_day %}
+            {% if today_day.workout %}
+            <div class="today-box">
+                <div class="today-label">I dag — {{ today_day.label }}</div>
+                <div class="today-workout">{{ today_day.workout }}</div>
+                <div class="today-focus">Fokus: {{ today_day.focus }}</div>
+                <a class="load-btn" href="?workout={{ today_day.workout|urlencode }}">Last inn økt &rarr;</a>
+            </div>
+            {% else %}
+            <div class="today-box" style="border-color:#aaa; background:#f9f9f9;">
+                <div class="today-label" style="color:#aaa;">I dag — {{ today_day.label }}</div>
+                <div class="today-workout" style="color:#999;">Hviledag 🛌</div>
+            </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="phase-label">Denne uken:</div>
+        <table class="week-table">
+            <thead>
+                <tr><th>Dag</th><th>Økt</th><th>Fokus</th><th></th></tr>
+            </thead>
+            <tbody>
+            {% for d in week_data.days %}
+                <tr class="{% if today_day and d.day == today_day.day %}today-row{% endif %}{% if not d.workout %} rest-row{% endif %}">
+                    <td>{{ d.label }}</td>
+                    <td>{% if d.workout %}{{ d.workout }}{% else %}Hvile{% endif %}</td>
+                    <td>
+                        {% if d.workout %}
+                        {% with f=d.focus %}
+                        <span class="focus-badge
+                            {% if 'Butt' in f %}butt
+                            {% elif 'Core' in f %}core
+                            {% elif 'Full' in f %}full
+                            {% elif 'Chest' in f or 'back' in f %}chest
+                            {% elif 'Arms' in f %}arms
+                            {% elif 'legs' in f %}legs
+                            {% endif %}">{{ f }}</span>
+                        {% endwith %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if d.workout %}
+                        <a href="?workout={{ d.workout|urlencode }}" style="font-size:0.8rem;color:#4caf50;">Last inn</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
 
     <form method="get" action=".">
     <label for="workoutSelect">Choose workout:</label>

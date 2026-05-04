@@ -1,4 +1,6 @@
 import os
+import json
+import datetime
 import pandas as pd
 from django.shortcuts import render
 from django.conf import settings
@@ -7,8 +9,37 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import WorkoutLog, WorkoutDetail
 from django.utils import timezone
 
+
+def _load_program():
+    """Load program.json and return (program_data, current_week_schedule)."""
+    path = os.path.join(settings.BASE_DIR, 'data', 'program.json')
+    with open(path, encoding='utf-8') as f:
+        program = json.load(f)
+
+    today = datetime.date.today()
+    # Current ISO week number (1-52)
+    iso_week = today.isocalendar()[1]
+    # Map to program week 1-12 (cycling)
+    program_week_num = ((iso_week - 1) % 12) + 1
+
+    week_data = next(
+        (w for w in program['weeks'] if w['week'] == program_week_num), None
+    )
+
+    # Find today's scheduled workout (day 1=Mon ... day 7=Sun)
+    today_dow = today.isoweekday()  # 1=Monday … 7=Sunday
+    today_day = None
+    if week_data:
+        for d in week_data['days']:
+            if d['day'] == today_dow:
+                today_day = d
+                break
+
+    return program, week_data, today_day, program_week_num
+
+
 def index(request):
-    file_path = os.path.join(settings.BASE_DIR, 'data', 'ovelser.xlsx')
+    file_path = os.path.join(settings.BASE_DIR, 'data', 'ovelser_v2.xlsx')
     df = pd.read_excel(file_path)
 
     df['Group'] = df['Group'].fillna('Default')
@@ -53,14 +84,21 @@ def index(request):
                         'reps': row.get('Reps', ''),
                     })
 
+    # Load training program
+    program, week_data, today_day, program_week_num = _load_program()
+
     context = {
         'exercises': full_sequence,
         'total_time': total_time,
         'workout_names': workout_names,
         'selected_workout': selected_workout,
-        'selected_workout_type': selected_workout_type,  # ✅ Now always defined
+        'selected_workout_type': selected_workout_type,
         'selected_type': selected_type,
         'completed_logs': WorkoutLog.objects.all().order_by('-date_completed'),
+        'program': program,
+        'week_data': week_data,
+        'today_day': today_day,
+        'program_week_num': program_week_num,
     }
 
     return render(request, 'index.html', context)

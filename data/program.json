@@ -1,0 +1,167 @@
+{
+  "program_name": "12-ukers kalistenikk-program",
+  "description": "Progressivt program — 6 dager i uken, 1 hviledag. Varighet øker gradvis fra 15 til 30 min.",
+  "phases": [
+    {"phase": 1, "weeks": [1,2,3,4], "duration_range": "15–20 min"},
+    {"phase": 2, "weeks": [5,6,7,8], "duration_range": "~25 min"},
+    {"phase": 3, "weeks": [9,10,11,12], "duration_range": "25–30 min"}
+  ],
+  "weeks": [
+    {
+      "week": 1,
+      "phase": 1,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Mini Full Body Start, 16 min",  "focus": "Full Body"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Core Starter, 15 min",           "focus": "Core"},
+        {"day": 3, "label": "Onsdag",   "workout": "Butt Beginner, 17 min",          "focus": "Butt"},
+        {"day": 4, "label": "Torsdag",  "workout": "Upper Body Light, 17 min",       "focus": "Chest, back"},
+        {"day": 5, "label": "Fredag",   "workout": "Legs & Butt Easy, 18 min",       "focus": "Butt, legs"},
+        {"day": 6, "label": "Lørdag",   "workout": "Core & Back Easy, 18 min",       "focus": "Core, back"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 2,
+      "phase": 1,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Full Body Boost, 20 min",        "focus": "Full Body"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Butt Beginner, 17 min",          "focus": "Butt"},
+        {"day": 3, "label": "Onsdag",   "workout": "Core Starter, 15 min",           "focus": "Core"},
+        {"day": 4, "label": "Torsdag",  "workout": "Butt & Thighs Intro, 21 min",    "focus": "Butt, legs"},
+        {"day": 5, "label": "Fredag",   "workout": "Upper Body Light, 17 min",       "focus": "Chest, back"},
+        {"day": 6, "label": "Lørdag",   "workout": "Legs & Butt Easy, 18 min",       "focus": "Butt, legs"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 3,
+      "phase": 1,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Mini Full Body Start, 16 min",  "focus": "Full Body"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Legs & Butt Easy, 18 min",       "focus": "Butt, legs"},
+        {"day": 3, "label": "Onsdag",   "workout": "Core & Back Easy, 18 min",       "focus": "Core, back"},
+        {"day": 4, "label": "Torsdag",  "workout": "Butt Beginner, 17 min",          "focus": "Butt"},
+        {"day": 5, "label": "Fredag",   "workout": "Full Body Boost, 20 min",        "focus": "Full Body"},
+        {"day": 6, "label": "Lørdag",   "workout": "Core Starter, 15 min",           "focus": "Core"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 4,
+      "phase": 1,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Butt & Thighs Intro, 21 min",   "focus": "Butt, legs"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Core & Back Easy, 18 min",       "focus": "Core, back"},
+        {"day": 3, "label": "Onsdag",   "workout": "Full Body Boost, 20 min",        "focus": "Full Body"},
+        {"day": 4, "label": "Torsdag",  "workout": "Butt Beginner, 17 min",          "focus": "Butt"},
+        {"day": 5, "label": "Fredag",   "workout": "Upper Body Light, 17 min",       "focus": "Chest, back"},
+        {"day": 6, "label": "Lørdag",   "workout": "Legs & Butt Easy, 18 min",       "focus": "Butt, legs"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 5,
+      "phase": 2,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Full Body Circuit, 25 min",      "focus": "Full Body"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Glute Power, 25 min",            "focus": "Butt"},
+        {"day": 3, "label": "Onsdag",   "workout": "Core Strength, 25 min",          "focus": "Core"},
+        {"day": 4, "label": "Torsdag",  "workout": "Lower Body & Glutes, 25 min",    "focus": "Butt, legs"},
+        {"day": 5, "label": "Fredag",   "workout": "Chest & Back Builder, 25 min",   "focus": "Chest, back"},
+        {"day": 6, "label": "Lørdag",   "workout": "Glute Power, 25 min",            "focus": "Butt"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 6,
+      "phase": 2,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Glute Power, 25 min",            "focus": "Butt"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Core Strength, 25 min",          "focus": "Core"},
+        {"day": 3, "label": "Onsdag",   "workout": "Full Body Circuit, 25 min",      "focus": "Full Body"},
+        {"day": 4, "label": "Torsdag",  "workout": "Chest & Back Builder, 25 min",   "focus": "Chest, back"},
+        {"day": 5, "label": "Fredag",   "workout": "Lower Body & Glutes, 25 min",    "focus": "Butt, legs"},
+        {"day": 6, "label": "Lørdag",   "workout": "Core Strength, 25 min",          "focus": "Core"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 7,
+      "phase": 2,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Full Body Circuit, 25 min",      "focus": "Full Body"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Lower Body & Glutes, 25 min",    "focus": "Butt, legs"},
+        {"day": 3, "label": "Onsdag",   "workout": "Glute Power, 25 min",            "focus": "Butt"},
+        {"day": 4, "label": "Torsdag",  "workout": "Core Strength, 25 min",          "focus": "Core"},
+        {"day": 5, "label": "Fredag",   "workout": "Chest & Back Builder, 25 min",   "focus": "Chest, back"},
+        {"day": 6, "label": "Lørdag",   "workout": "Lower Body & Glutes, 25 min",    "focus": "Butt, legs"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 8,
+      "phase": 2,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Glute Power, 25 min",            "focus": "Butt"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Full Body Circuit, 25 min",      "focus": "Full Body"},
+        {"day": 3, "label": "Onsdag",   "workout": "Core Strength, 25 min",          "focus": "Core"},
+        {"day": 4, "label": "Torsdag",  "workout": "Lower Body & Glutes, 25 min",    "focus": "Butt, legs"},
+        {"day": 5, "label": "Fredag",   "workout": "Glute Power, 25 min",            "focus": "Butt"},
+        {"day": 6, "label": "Lørdag",   "workout": "Chest & Back Builder, 25 min",   "focus": "Chest, back"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 9,
+      "phase": 3,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Full Body Burn, 28 min",         "focus": "Full Body"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Glute & Core Power, 28 min",     "focus": "Butt"},
+        {"day": 3, "label": "Onsdag",   "workout": "Core & Upper Advanced, 28 min",  "focus": "Arms, core"},
+        {"day": 4, "label": "Torsdag",  "workout": "Legs of Steel, 30 min",          "focus": "Butt, legs"},
+        {"day": 5, "label": "Fredag",   "workout": "Total Body Finisher, 30 min",    "focus": "Full Body"},
+        {"day": 6, "label": "Lørdag",   "workout": "Glute & Core Power, 28 min",     "focus": "Butt"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 10,
+      "phase": 3,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Glute & Core Power, 28 min",     "focus": "Butt"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Core & Upper Advanced, 28 min",  "focus": "Arms, core"},
+        {"day": 3, "label": "Onsdag",   "workout": "Legs of Steel, 30 min",          "focus": "Butt, legs"},
+        {"day": 4, "label": "Torsdag",  "workout": "Full Body Burn, 28 min",         "focus": "Full Body"},
+        {"day": 5, "label": "Fredag",   "workout": "Glute & Core Power, 28 min",     "focus": "Butt"},
+        {"day": 6, "label": "Lørdag",   "workout": "Total Body Finisher, 30 min",    "focus": "Full Body"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 11,
+      "phase": 3,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Total Body Finisher, 30 min",    "focus": "Full Body"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Legs of Steel, 30 min",          "focus": "Butt, legs"},
+        {"day": 3, "label": "Onsdag",   "workout": "Glute & Core Power, 28 min",     "focus": "Butt"},
+        {"day": 4, "label": "Torsdag",  "workout": "Core & Upper Advanced, 28 min",  "focus": "Arms, core"},
+        {"day": 5, "label": "Fredag",   "workout": "Full Body Burn, 28 min",         "focus": "Full Body"},
+        {"day": 6, "label": "Lørdag",   "workout": "Legs of Steel, 30 min",          "focus": "Butt, legs"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    },
+    {
+      "week": 12,
+      "phase": 3,
+      "days": [
+        {"day": 1, "label": "Mandag",   "workout": "Glute & Core Power, 28 min",     "focus": "Butt"},
+        {"day": 2, "label": "Tirsdag",  "workout": "Full Body Burn, 28 min",         "focus": "Full Body"},
+        {"day": 3, "label": "Onsdag",   "workout": "Total Body Finisher, 30 min",    "focus": "Full Body"},
+        {"day": 4, "label": "Torsdag",  "workout": "Legs of Steel, 30 min",          "focus": "Butt, legs"},
+        {"day": 5, "label": "Fredag",   "workout": "Core & Upper Advanced, 28 min",  "focus": "Arms, core"},
+        {"day": 6, "label": "Lørdag",   "workout": "Glute & Core Power, 28 min",     "focus": "Butt"},
+        {"day": 7, "label": "Søndag",   "workout": null,                              "focus": "Hvile"}
+      ]
+    }
+  ]
+}
