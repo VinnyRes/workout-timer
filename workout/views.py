@@ -17,10 +17,18 @@ def _load_program():
         program = json.load(f)
 
     today = datetime.date.today()
-    # Current ISO week number (1-52)
-    iso_week = today.isocalendar()[1]
-    # Map to program week 1-12 (cycling)
-    program_week_num = ((iso_week - 1) % 12) + 1
+
+    # Program week = days since program_start.txt ÷ 7, cycling over 12 weeks
+    start_file = os.path.join(settings.BASE_DIR, 'data', 'program_start.txt')
+    if os.path.exists(start_file):
+        with open(start_file) as sf:
+            program_start = datetime.date.fromisoformat(sf.read().strip())
+    else:
+        program_start = today
+
+    days_since = (today - program_start).days
+    # Week 1 on day 0-6, week 2 on day 7-13, … cycling over 12
+    program_week_num = (days_since // 7) % 12 + 1
 
     week_data = next(
         (w for w in program['weeks'] if w['week'] == program_week_num), None
@@ -187,11 +195,16 @@ def summary(request):
     weekly_counts  = df.groupby("week")["date_completed"].count()
     labels         = weekly_minutes.index.tolist()
 
-    # ── 2025 averages ─────────────────────────────────────────────────────────
+    # ── 2025 averages — divide by total weeks in active period, not just weeks with data ──
     df25 = df[df["year"] == 2025]
     if not df25.empty:
-        avg_2025_counts  = round(df25.groupby("week")["date_completed"].count().mean(), 1)
-        avg_2025_minutes = round(df25.groupby("week")["duration_minutes"].sum().mean(), 1)
+        first_date = df25["date_completed"].min().date()
+        last_date  = df25["date_completed"].max().date()
+        total_weeks_2025 = max(((last_date - first_date).days / 7), 1)
+        total_sessions_2025 = len(df25)
+        total_minutes_2025  = df25["duration_minutes"].sum()
+        avg_2025_counts  = round(total_sessions_2025 / total_weeks_2025, 1)
+        avg_2025_minutes = round(total_minutes_2025  / total_weeks_2025, 1)
     else:
         avg_2025_counts  = 0
         avg_2025_minutes = 0
