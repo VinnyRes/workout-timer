@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -155,6 +156,20 @@
         .completed-list li:last-child {
         border-bottom: none;
         }
+
+        /* ── Stick figure animation ── */
+        #anim-container {
+            display: none;
+            margin: 10px auto 0;
+        }
+        #anim-container.active { display: block; }
+        #exercise-anim {
+            display: block;
+            margin: 0 auto;
+            background: #f8fdf8;
+            border-radius: 14px;
+            border: 1.5px solid #c8e6c9;
+        }
     </style>
 </head>
 <body>
@@ -245,6 +260,10 @@
     <h3 id="next">Next Exercise: --</h3>
     <h3 id="elapsed">Elapsed Time: 0s</h3>
     <div id="progress"><div id="bar"></div></div>
+
+    <div id="anim-container">
+        <svg id="exercise-anim" width="200" height="200" viewBox="0 0 200 200"></svg>
+    </div>
 {% endif %}
     
 {% if selected_workout_type == "Weights" %}
@@ -291,6 +310,7 @@
     
 
 
+    <script src="{% static 'workout/animations.js' %}"></script>
     <script>
        
 
@@ -331,6 +351,8 @@ function nextExercise() {
     timerEl.innerText = "--";
     nextEl.innerText = "Next: --";
     clearInterval(elapsedInterval);
+    WorkoutAnim.stop();
+    document.getElementById('anim-container').classList.remove('active');
 
     // ⏱ Capture total elapsed time
     const elapsed = elapsedTime;  // elapsedTime is already counting seconds
@@ -356,12 +378,18 @@ function nextExercise() {
 
     // 👉 Skip countdown if it's a rest
     if (current.exercise === "Rest") {
+        WorkoutAnim.stop();
+        document.getElementById('anim-container').classList.remove('active');
         startExercise(current);
     } else {
         exerciseEl.innerText = "Get ready for: " + current.exercise;
         let prepTime = 3;
         timerEl.innerText = prepTime;
         beep.play();
+
+        // Show animation already during prep
+        document.getElementById('anim-container').classList.add('active');
+        WorkoutAnim.show(current.exercise);
 
         let prepInterval = setInterval(() => {
             prepTime--;
@@ -380,6 +408,12 @@ function nextExercise() {
 function startExercise(current) {
     exerciseEl.innerText = current.exercise;
     timerEl.innerText = current.duration;
+
+    // Keep animation running (already started in prep, or start now for rest-skipped)
+    if (current.exercise !== 'Rest') {
+        document.getElementById('anim-container').classList.add('active');
+        WorkoutAnim.show(current.exercise);
+    }
 
     // Show next non-rest exercise
     let nextExerciseName = "--";
