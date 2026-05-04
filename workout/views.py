@@ -218,11 +218,14 @@ def summary(request):
         program = _json.load(f)
 
     today = datetime.date.today()
-    # Program "start date": first Monday of 2026 (or whichever year is current)
-    program_year = 2026
-    jan1 = datetime.date(program_year, 1, 1)
-    # Monday of week 1 in program_year
-    program_start = jan1 - datetime.timedelta(days=jan1.weekday())
+    # Program start date: stored in data/program_start.txt
+    # If file doesn't exist, create it with today's date.
+    start_file = os.path.join(settings.BASE_DIR, 'data', 'program_start.txt')
+    if not os.path.exists(start_file):
+        with open(start_file, 'w') as sf:
+            sf.write(today.isoformat())
+    with open(start_file) as sf:
+        program_start = datetime.date.fromisoformat(sf.read().strip())
 
     days_elapsed = (today - program_start).days + 1  # inclusive
     if days_elapsed < 0:
@@ -266,4 +269,5 @@ def summary(request):
         "completion_pct":        completion_pct,
         "completed_planned":     completed_planned,
         "total_planned":         total_planned,
+        "program_start":         program_start.strftime("%d. %B %Y").lstrip("0"),
     })
