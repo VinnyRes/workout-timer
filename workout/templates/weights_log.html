@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weights Workout Log</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+        th, td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        h2 {
+            margin-top: 40px;
+        }
+        .exercise-group {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weights Workout Log</h1>
+
+    {% for log in logs %}
+        <h2>{{ log.name }} ({{ log.date_completed|date:"Y-m-d H:i" }})</h2>
+        <ul>
+            {% for detail in log.details.all %}
+                <li>
+                    <strong>{{ detail.exercise }}</strong>: {{ detail.kilos }} kg × {{ detail.reps }} reps × {{ detail.sets }} sets
+                </li>
+            {% empty %}
+                <li>No exercises logged.</li>
+            {% endfor %}
+        </ul>
+    {% empty %}
+        <p>No weight workouts logged yet.</p>
+    {% endfor %}
+
+    <hr>
+
+    <h2>Log New Weight Workout</h2>
+    <form method="POST" action="{% url 'save_workout_log' %}">
+        {% csrf_token %}
+        <label for="name">Workout Name:</label>
+        <input type="text" name="name" required><br><br>
+
+        <input type="hidden" name="type" value="Weights">
+
+        <div id="exercises-container">
+            <div class="exercise-group">
+                <input type="text" name="exercise[]" placeholder="Exercise" required>
+                <input type="number" name="kilos[]" placeholder="Kilos" required>
+                <input type="number" name="reps[]" placeholder="Reps" required>
+                <input type="number" name="sets[]" placeholder="Sets" required>
+            </div>
+        </div>
+
+        <button type="button" onclick="addExercise()">Add Another Exercise</button><br><br>
+        <button type="submit">Submit Workout</button>
+    </form>
+
+    <script>
+        function addExercise() {
+            const container = document.getElementById('exercises-container');
+            const group = document.createElement('div');
+            group.className = 'exercise-group';
+
+            group.innerHTML = `
+                <input type="text" name="exercise[]" placeholder="Exercise" required>
+                <input type="number" name="kilos[]" placeholder="Kilos" required>
+                <input type="number" name="reps[]" placeholder="Reps" required>
+                <input type="number" name="sets[]" placeholder="Sets" required>
+            `;
+
+            container.appendChild(group);
+        }
+    </script>
+</body>
+</html>

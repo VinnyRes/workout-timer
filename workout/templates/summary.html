@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workout Summary</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Workout Summary</h1>
+
+    <div style="width: 80%; margin: auto;">
+        <h3>Minutes Trained Per Week</h3>
+        <canvas id="minutesChart"></canvas>
+    </div>
+
+    <div style="width: 80%; margin: auto; margin-top: 40px;">
+        <h3>Workouts Per Week</h3>
+        <canvas id="countChart"></canvas>
+    </div>
+
+    <script>
+        const labels = {{ labels|safe }};
+        const minutesData = {{ chart_minutes|safe }};
+        const countsData = {{ chart_counts|safe }};
+
+        new Chart(document.getElementById('minutesChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Minutes trained',
+                    data: minutesData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)'
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('countChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Workouts per week',
+                    data: countsData,
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    fill: false,
+                    tension: 0.3
+                }]
+            }
+        });
+    </script>
+</body>
+</html>

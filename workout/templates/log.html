@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>Workout Log</title></head>
+<body>
+<h1>Workout History</h1>
+
+{% for entry in detailed_logs %}
+    <h3>{{ entry.log.name }} ({{ entry.log.type }}) - {{ entry.log.date_completed|date:"Y-m-d H:i" }}</h3>
+    {% if entry.log.type == "Weights" %}
+        <ul>
+        {% for detail in entry.details %}
+            <li>{{ detail.exercise }}: {{ detail.kilos }} kg x {{ detail.reps }} reps ({{ detail.sets }} sets)</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% empty %}
+    <p>No workouts logged yet.</p>
+{% endfor %}
+
+</body>
+</html>

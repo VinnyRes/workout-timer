@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workout Timer</title>
+    
+    <style>
+
+        
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        #progress {
+            width: 80%;
+            height: 30px;
+            background-color: #eee;
+            margin: 20px auto;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        #bar {
+            height: 100%;
+            width: 0%;
+            background-color: #4caf50;
+            transition: width 1s linear;
+        }
+         #startBtn {
+        font-size: 18px;
+        padding: 10px 20px;
+        margin-bottom: 20px;
+        }
+
+        .completed-box {
+        width: 80%;
+        margin: 10px auto 0;
+        max-height: 250px;      /* adjust as you like */
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 10px;
+        background: #fafafa;
+        }
+
+        .completed-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        text-align: left;       /* makes it easier to read */
+        }
+
+        .completed-list li {
+        padding: 6px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;        /* stays stable */
+        line-height: 1.3;
+        }
+
+        .completed-list li:last-child {
+        border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Workout Timer</h1>
+
+    <form method="get" action=".">
+    <label for="workoutSelect">Choose workout:</label>
+    <select name="workout" id="workoutSelect">
+        <option value="">-- Select --</option>
+        {% for name in workout_names %}
+            <option value="{{ name }}" {% if name == selected_workout %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Load</button>
+
+</form>
+
+{% if exercises %}
+    <button id="startBtn" onclick="startWorkout()">Start Workout</button>
+
+    <h2 id="exercise">Start your workout when ready</h2>
+    <h1 id="timer">--</h1>
+    <h3 id="next">Next Exercise: --</h3>
+    <h3 id="elapsed">Elapsed Time: 0s</h3>
+    <div id="progress"><div id="bar"></div></div>
+{% endif %}
+    
+{% if selected_workout_type == "Weights" %}
+<form id="weightsForm">
+    <h3>Log Your Workout:</h3>
+    <div id="weightsInputs">
+        <!-- First input block -->
+        <div class="set-block">
+            <label>Exercise:</label>
+            <input type="text" name="exercise[]" required>
+            <label>Kilos:</label>
+            <input type="number" name="kilos[]" required>
+            <label>Reps:</label>
+            <input type="number" name="reps[]" required>
+            <label>Sets:</label>
+            <input type="number" name="sets[]" required>
+        </div>
+    </div>
+    
+    <button type="button" onclick="addExercise()">➕ Add Exercise</button>
+    <br><br>
+    <button type="button" onclick="submitWeights()">✅ Finish & Save Workout</button>
+</form>
+{% endif %}
+
+<h3>Completed Workouts</h3>
+
+    <div class="completed-box">
+    <ul class="completed-list">
+    {% for log in completed_logs %}
+      <li>
+        <strong>{{ log.name }}</strong>
+        {% if log.type %} ({{ log.type }}) {% endif %}
+        – {{ log.date_completed|date:"Y-m-d H:i" }}
+      </li>
+    {% endfor %}
+    </ul>
+    </div>
+
+    <audio id="beep" preload="auto">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    Your browser does not support the audio element.
+    </audio>
+    
+
+
+    <script>
+       
+
+        let index = 0;
+        let currentTimer = null;
+        let elapsedTime = 0;
+        let elapsedInterval;
+
+        
+        let totalWorkoutTime = {{ total_time|default:"0" }};
+
+        const exerciseEl = document.getElementById("exercise");
+        const nextEl = document.getElementById("next");
+        const timerEl = document.getElementById("timer");
+        const beep = document.getElementById("beep");
+        const bar = document.getElementById("bar");
+        const exerciseList = {{ exercises|safe|default:"[]" }};
+        const workoutType = "{{ selected_workout_type|default:'' }}";
+
+function startWorkout() {
+    document.getElementById("startBtn").disabled = true;
+    beep.play();  // ✅ allowed because it's inside a click handler
+
+      if (workoutType === "Calisthenics") {
+        startElapsedTimer();
+        nextExercise();
+    } else if (workoutType === "Weights") {
+        startElapsedTimer();
+        nextExercise();
+        showWeightsForm();  // Assuming you built this
+    }
+}
+
+
+function nextExercise() {
+    if (index >= exerciseList.length) {
+    exerciseEl.innerText = "Workout complete!";
+    timerEl.innerText = "--";
+    nextEl.innerText = "Next: --";
+    clearInterval(elapsedInterval);
+
+    // ⏱ Capture total elapsed time
+    const elapsed = elapsedTime;  // elapsedTime is already counting seconds
+
+    // ✅ Save workout to server with duration
+    fetch("/save-workout-log/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: `name={{ selected_workout }}&type={{ selected_type }}&duration=${elapsed}`
+    }).then(res => {
+        if (res.ok) {
+            console.log("Workout logged with duration:", elapsed);
+        }
+    });
+
+    return;
+}
+
+    const current = exerciseList[index];
+
+    // 👉 Skip countdown if it's a rest
+    if (current.exercise === "Rest") {
+        startExercise(current);
+    } else {
+        exerciseEl.innerText = "Get ready for: " + current.exercise;
+        let prepTime = 3;
+        timerEl.innerText = prepTime;
+        beep.play();
+
+        let prepInterval = setInterval(() => {
+            prepTime--;
+            timerEl.innerText = prepTime;
+            if (prepTime > 0) {
+                beep.play();
+            }
+            if (prepTime <= 0) {
+                clearInterval(prepInterval);
+                startExercise(current);
+            }
+        }, 1000);
+    }
+}
+
+function startExercise(current) {
+    exerciseEl.innerText = current.exercise;
+    timerEl.innerText = current.duration;
+
+    // Show next non-rest exercise
+    let nextExerciseName = "--";
+    for (let i = index + 1; i < exerciseList.length; i++) {
+        if (exerciseList[i].exercise !== "Rest") {
+            nextExerciseName = exerciseList[i].exercise;
+            break;
+        }
+    }
+    nextEl.innerText = "Next Exercise: " + nextExerciseName;
+
+    let timeLeft = current.duration;
+
+    currentTimer = setInterval(() => {
+        timerEl.innerText = timeLeft;
+
+        // ✅ Beep on last 3 seconds
+        if (timeLeft <= 3 && timeLeft > 0) {
+            beep.play();
+        }
+
+        updateProgressBar(current.duration, timeLeft);
+        timeLeft--;
+
+        if (timeLeft < 0) {
+            clearInterval(currentTimer);
+            index++;
+            setTimeout(nextExercise, 500);  // short delay before next
+        }
+    }, 1000);
+}
+
+function updateProgressBar(total, remaining) {
+    const percent = 100 * (1 - remaining / total);
+    document.getElementById("bar").style.width = percent + "%";
+}
+
+function startElapsedTimer() {
+    elapsedTime = 0;
+    elapsedInterval = setInterval(() => {
+        elapsedTime++;
+        const minutes = Math.floor(elapsedTime / 60);
+        const seconds = elapsedTime % 60;
+        const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        document.getElementById("elapsed").innerText = "Elapsed Time: " + formatted;
+    }, 1000);
+}
+  
+function runExercise(current) {
+    exerciseEl.innerText = current.exercise;
+    timerEl.innerText = current.duration;
+
+    // Show what's next (non-rest)
+    let nextExerciseName = "--";
+    for (let i = index + 1; i < exerciseList.length; i++) {
+        if (exerciseList[i].exercise !== "Rest") {
+            nextExerciseName = exerciseList[i].exercise;
+            break;
+        }
+    }
+    nextEl.innerText = "Next Exercise: " + nextExerciseName;
+
+    let timeLeft = current.duration;
+    currentTimer = setInterval(() => {
+        timerEl.innerText = timeLeft;
+
+        // 🔊 Beep at last 3 seconds
+        if (timeLeft <= 3 && timeLeft > 0) {
+            beep.play();
+        }
+
+        updateProgressBar(current.duration, timeLeft);
+        timeLeft--;
+
+        if (timeLeft < 0) {
+            clearInterval(currentTimer);
+            index++;
+            setTimeout(nextExercise, 500); // slight delay before next
+        }
+    }, 1000);
+}
+
+function showWeightsForm() {
+        const form = document.createElement("form");
+        form.innerHTML = `
+            <h2>Log your workout</h2>
+            <label>Exercise:</label>
+            <select name="exercise">
+                ${exerciseList.map(e => `<option value="${e.exercise}">${e.exercise}</option>`).join("")}
+            </select><br>
+            <label>Sets:</label><input type="number" name="sets"><br>
+            <label>Reps:</label><input type="number" name="reps"><br>
+            <label>Weight (kg):</label><input type="number" name="weight"><br>
+            <button type="submit">Save</button>
+        `;
+        document.body.appendChild(form);
+        
+        const formData = new URLSearchParams();
+        formData.append("name", selectedWorkoutName);
+        formData.append("type", "Weights");
+
+        document.querySelectorAll(".weights-row").forEach(row => {
+            formData.append("exercise[]", row.querySelector(".exercise").value);
+            formData.append("kilos[]", row.querySelector(".kilos").value);
+            formData.append("reps[]", row.querySelector(".reps").value);
+            formData.append("sets[]", row.querySelector(".sets").value);
+        });
+
+        fetch("/save-workout-log/", {
+            method: "POST",
+            headers: {
+             "Content-Type": "application/x-www-form-urlencoded",
+             "X-CSRFToken": csrfToken
+            },
+            body: formData.toString()
+        });
+
+
+    }
+
+  function addExercise() {
+    const container = document.getElementById("weightsInputs");
+    
+    const newBlock = document.createElement("div");
+    newBlock.classList.add("set-block");
+    newBlock.innerHTML = `
+        <label>Exercise:</label>
+        <input type="text" name="exercise[]" required>
+        <label>Kilos:</label>
+        <input type="number" name="kilos[]" required>
+        <label>Reps:</label>
+        <input type="number" name="reps[]" required>
+        <label>Sets:</label>
+        <input type="number" name="sets[]" required>
+        <button type="button" onclick="this.parentElement.remove()">🗑 Remove</button>
+        <br><br>
+    `;
+    
+    container.appendChild(newBlock);
+}
+
+function submitWeights() {
+    const form = document.getElementById("weightsForm");
+    const formData = new FormData(form);
+
+    formData.append("name", "{{ selected_workout }}");
+    formData.append("type", "{{ selected_workout_type }}");
+
+    fetch("/save-workout-log/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: formData
+    }).then(res => {
+        if (res.ok) {
+            alert("Workout saved!");
+            location.reload();
+        } else {
+            alert("Error saving workout.");
+        }
+    });
+}
+    </script>
+</body>
+</html>

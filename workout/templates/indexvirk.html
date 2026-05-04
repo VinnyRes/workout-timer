@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workout Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        #progress {
+            width: 80%;
+            height: 30px;
+            background-color: #eee;
+            margin: 20px auto;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        #bar {
+            height: 100%;
+            width: 0%;
+            background-color: #4caf50;
+            transition: width 1s linear;
+        }
+         #startBtn {
+        font-size: 18px;
+        padding: 10px 20px;
+        margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Workout Timer</h1>
+     <!-- Add total duration display -->
+    <button id="startBtn" onclick="startWorkout()">Start Workout</button>
+
+    <h2 id="exercise">Starting soon...</h2>
+    <h1 id="timer">--</h1>
+    <h3 id="next">Next: --</h3>
+    <h3 id="elapsed">Elapsed Time: 0s</h3>
+    <div id="progress"><div id="bar"></div></div>
+
+
+    <audio id="beep" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3" preload="auto"></audio>
+
+    <script>
+        const exercises = [
+            "Jumping Jacks",
+            "Push-Ups",
+            "Plank",
+            "High Knees",
+            "Mountain Climbers",
+            "Burpees"
+        ];
+
+        let current = 0;
+        let rounds = 3;
+        let restTime = 10;
+        let workTime = 40;
+        let isRest = false;
+        let roundCounter = 1;
+        let timerInterval;
+        let elapsedTime = 0;
+        let elapsedInterval = null;
+
+
+        const exerciseEl = document.getElementById("exercise");
+        const nextEl = document.getElementById("next");
+        const timerEl = document.getElementById("timer");
+        const beep = document.getElementById("beep");
+        const bar = document.getElementById("bar")
+     
+
+function startWorkout() {
+        document.getElementById("startBtn").disabled = true;
+        startElapsedTimer();
+        startNextExercise();
+}
+
+function startElapsedTimer() {
+    elapsedInterval = setInterval(() => {
+        elapsedTime++;
+        tid= document.getElementById("elapsed").innerText = "Elapsed Time: " + elapsedTime + "s";
+    }, 1000);
+}
+
+function stopElapsedTimer() {
+    clearInterval(elapsedInterval);
+}
+
+        function startTimer(duration, label, callback) {
+            let timeLeft = duration;
+            timerEl.textContent = timeLeft;
+            label === "Rest" ? exerciseEl.textContent = "Rest..." : exerciseEl.textContent = label;
+            bar.style.width = "0%";
+            beep.play();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                bar.style.width = `${((duration - timeLeft) / duration) * 100}%`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    beep.play();
+                    callback();
+                }
+            }, 1000);
+        }
+        
+        function nextSet() {
+            if (current >= exercises.length) {
+                current = 0;
+                roundCounter++;
+                if (roundCounter > rounds) {
+                    exerciseEl.textContent = "Workout Complete 🎉";
+                    timerEl.textContent = "--";
+                    nextEl.textContent = "";
+                    return;
+                }
+            }
+
+            let label = exercises[current];
+            let next = exercises[(current + 1) % exercises.length];
+            nextEl.textContent = "Next: " + next;
+            startTimer(workTime, label, () => {
+                isRest = true;
+                startTimer(restTime, "Rest", () => {
+                    isRest = false;
+                    current++;
+                    nextSet();
+                });
+            });
+        }
+
+        // Start after small delay
+        setTimeout(() => {
+            nextSet();
+        }, 2000);
+  
+    </script>
+</body>
+</html>
